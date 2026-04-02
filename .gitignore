@@ -1,0 +1,48 @@
+# Build files
+build/
+.gradle/
+*.apk
+*.aab
+*.jks
+*.keystore
+local.properties
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+*.iml
+
+# Gradle
+.gradle
+/build
+gradle-wrapper.jar
+.gradle/
+
+# Android
+.android/
+.gradle/wrapper
+
+# Keys and secrets
+keystore.properties
+*.jks
+*.keystore
+
+# Dependencies
+**/node_modules/
+.gradle/wrapper/
+
+# Generated files
+*.class
+*.dex
+*.apk
+*.ap_
+*.aab
+
+# Git LFS
+*.psd
+*.zip
+*.rar

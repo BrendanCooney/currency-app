@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Currency Converter</string>
+    <string name="from_currency">From</string>
+    <string name="to_currency">To</string>
+    <string name="convert_button">Convert</string>
+    <string name="refresh_rates">Refresh Rates</string>
+    <string name="last_updated">Last updated</string>
+    <string name="exchange_rates">Exchange Rates</string>
+</resources>
