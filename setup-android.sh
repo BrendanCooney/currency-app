@@ -31,51 +31,66 @@ else
     echo "✅ Java already installed"
 fi
 
-# Install Android SDK
-if ! command -v sdkmanager &> /dev/null; then
-    echo "Installing Android SDK..."
-    brew install android-sdk
-else
-    echo "✅ Android SDK already installed"
-fi
-
-# Install Android Platform Tools (adb, emulator, etc.)
-if ! command -v adb &> /dev/null; then
-    echo "Installing Android Platform Tools..."
-    brew install android-platform-tools
-else
-    echo "✅ Android Platform Tools already installed"
-fi
-
-# Set Android SDK paths
-export ANDROID_SDK_ROOT=$(brew --prefix)/opt/android-sdk
-export PATH="$PATH:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/tools/bin"
+# Set up Android SDK directory
+export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"
+export PATH="$PATH:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/emulator"
 
 # Add to shell profile for future sessions
 if ! grep -q "ANDROID_SDK_ROOT" ~/.zshrc 2>/dev/null; then
     echo "" >> ~/.zshrc
     echo "# Android SDK Configuration" >> ~/.zshrc
-    echo "export ANDROID_SDK_ROOT=\$(brew --prefix)/opt/android-sdk" >> ~/.zshrc
-    echo "export PATH=\"\$PATH:\$ANDROID_SDK_ROOT/platform-tools:\$ANDROID_SDK_ROOT/tools/bin\"" >> ~/.zshrc
+    echo "export ANDROID_SDK_ROOT=\"\$HOME/Library/Android/sdk\"" >> ~/.zshrc
+    echo "export PATH=\"\$PATH:\$ANDROID_SDK_ROOT/platform-tools:\$ANDROID_SDK_ROOT/tools/bin:\$ANDROID_SDK_ROOT/emulator\"" >> ~/.zshrc
+fi
+
+# Download and install Android SDK Command-line Tools
+if [ ! -d "$ANDROID_SDK_ROOT/cmdline-tools/latest" ]; then
+    echo "Downloading Android SDK Command-line Tools..."
+    mkdir -p "$ANDROID_SDK_ROOT"
+    
+    TOOLS_ZIP="/tmp/cmdline-tools.zip"
+    
+    # Download for macOS
+    curl -s "https://dl.google.com/android/repository/commandlinetools-mac-8512546_latest.zip" -o "$TOOLS_ZIP"
+    
+    if [ ! -f "$TOOLS_ZIP" ]; then
+        echo "❌ Failed to download Android SDK tools"
+        echo "Try manual installation from: https://developer.android.com/studio/command-line-tools"
+        exit 1
+    fi
+    
+    # Extract and organize
+    mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+    unzip -q "$TOOLS_ZIP" -d "$ANDROID_SDK_ROOT/cmdline-tools"
+    mv "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+    rm "$TOOLS_ZIP"
+    
+    echo "✅ Android SDK Command-line Tools installed"
+else
+    echo "✅ Android SDK Command-line Tools already installed"
 fi
 
 echo ""
 echo "📱 Setting up Android Emulator..."
 echo ""
 
+# Reload PATH with new SDK tools
+export SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+export AVDMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager"
+
 # Accept Android licenses
 echo "Accepting Android licenses (this may take a moment)..."
-yes | sdkmanager --licenses > /dev/null 2>&1 || true
+yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
 
-# Install Android 34 system image
-echo "Downloading Android 34 system image (this may take 5-10 minutes)..."
-sdkmanager "system-images;android-34;google_apis;arm64-v8a" "emulator" "platform-tools" "platforms;android-34"
+# Install Android 34 system image and tools
+echo "Downloading Android 34 system image and tools (this may take 10-15 minutes)..."
+"$SDKMANAGER" "system-images;android-34;google_apis;arm64-v8a" "emulator" "platform-tools" "platforms;android-34" --verbose
 
 # Create emulator
 echo ""
 echo "Creating virtual device 'CurrencyApp'..."
-avdmanager delete avd -n CurrencyApp 2>/dev/null || true
-echo "no" | avdmanager create avd -n CurrencyApp -k "system-images;android-34;google_apis;arm64-v8a" -d "Pixel 6"
+"$AVDMANAGER" delete avd -n CurrencyApp 2>/dev/null || true
+echo "no" | "$AVDMANAGER" create avd -n CurrencyApp -k "system-images;android-34;google_apis;arm64-v8a" -d "Pixel 6"
 
 echo ""
 echo "✅ Setup Complete!"

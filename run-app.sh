@@ -5,17 +5,30 @@
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# Set up Android SDK paths
+export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"
+export PATH="$PATH:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator"
+
 echo "🚀 Currency App - Quick Launch"
 echo "=============================="
 echo ""
 
+# Check if adb is available
+if ! command -v adb &> /dev/null; then
+    echo "❌ Error: adb not found in PATH"
+    echo ""
+    echo "Please run setup first:"
+    echo "  ./setup-android.sh"
+    exit 1
+fi
+
 # Check if emulator is already running
-if adb devices | grep -q "CurrencyApp"; then
+if adb devices | grep -q "emulator"; then
     echo "✅ Emulator already running"
 else
     echo "📱 Starting emulator..."
     echo "   (This will open a new window and take 30-60 seconds)"
-    emulator -avd CurrencyApp &
+    "$ANDROID_SDK_ROOT/emulator/emulator" -avd CurrencyApp &
     EMULATOR_PID=$!
     
     echo "⏳ Waiting for emulator to boot..."
