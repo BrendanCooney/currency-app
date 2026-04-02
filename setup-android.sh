@@ -25,11 +25,26 @@ echo ""
 if ! command -v java &> /dev/null; then
     echo "Installing Java 17..."
     brew install openjdk@17
-    echo "export PATH=\"/usr/local/opt/openjdk@17/bin:\$PATH\"" >> ~/.zshrc
-    export PATH="/usr/local/opt/openjdk@17/bin:$PATH"
-else
-    echo "✅ Java already installed"
 fi
+
+# Set Java path - try both possible locations
+if [ -d "/usr/local/opt/openjdk@17" ]; then
+    export JAVA_HOME="/usr/local/opt/openjdk@17"
+elif [ -d "/opt/homebrew/opt/openjdk@17" ]; then
+    export JAVA_HOME="/opt/homebrew/opt/openjdk@17"
+else
+    # Fall back to java_home command
+    export JAVA_HOME=$(/usr/libexec/java_home -v 17 2>/dev/null || echo "")
+fi
+
+if [ -z "$JAVA_HOME" ]; then
+    echo "❌ Could not find Java 17. Please install it:"
+    echo "   brew install openjdk@17"
+    exit 1
+fi
+
+echo "✅ Java found at: $JAVA_HOME"
+export PATH="$JAVA_HOME/bin:$PATH"
 
 # Set up Android SDK directory
 export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"
@@ -39,8 +54,9 @@ export PATH="$PATH:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/tools/bin:
 if ! grep -q "ANDROID_SDK_ROOT" ~/.zshrc 2>/dev/null; then
     echo "" >> ~/.zshrc
     echo "# Android SDK Configuration" >> ~/.zshrc
+    echo "export JAVA_HOME=\"\$(/usr/libexec/java_home -v 17 2>/dev/null || echo '')\"" >> ~/.zshrc
     echo "export ANDROID_SDK_ROOT=\"\$HOME/Library/Android/sdk\"" >> ~/.zshrc
-    echo "export PATH=\"\$PATH:\$ANDROID_SDK_ROOT/platform-tools:\$ANDROID_SDK_ROOT/tools/bin:\$ANDROID_SDK_ROOT/emulator\"" >> ~/.zshrc
+    echo "export PATH=\"\$JAVA_HOME/bin:\$PATH:\$ANDROID_SDK_ROOT/platform-tools:\$ANDROID_SDK_ROOT/tools/bin:\$ANDROID_SDK_ROOT/emulator\"" >> ~/.zshrc
 fi
 
 # Download and install Android SDK Command-line Tools
