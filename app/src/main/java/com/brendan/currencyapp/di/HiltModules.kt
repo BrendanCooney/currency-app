@@ -9,6 +9,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.components.SingletonComponent
+import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -58,7 +59,7 @@ object NetworkModule {
 object DatabaseModule {
     @Singleton
     @Provides
-    fun provideCurrencyDatabase(context: Context): CurrencyAppDatabase {
+    fun provideCurrencyDatabase(@ApplicationContext context: Context): CurrencyAppDatabase {
         return CurrencyAppDatabase.getDatabase(context)
     }
 }
